@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "Ekonomi Platform",
+    "slug": "ekonomi-platform",
+    "scheme": "ekonomiplatform",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

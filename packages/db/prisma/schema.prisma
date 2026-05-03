@@ -1,0 +1,690 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum BackofficeRoleKey {
+  CUSTOMER_SUPPORT
+  ACCOUNTANT
+  AUDITOR
+  CORPORATE_LAWYER
+  TAX_LAWYER
+  ADMIN_SUPPORT
+}
+
+enum BackofficePermissionKey {
+  VIEW_COMPANY_PROFILE
+  VIEW_COMPANY_FINANCE
+  VIEW_COMPANY_PAYROLL
+  VIEW_COMPANY_DOCUMENTS
+  REPLY_CUSTOMER_MESSAGES
+  CREATE_INTERNAL_COMMENT
+  ASSIGN_CASE
+  ESCALATE_CASE
+  RESOLVE_CASE
+  REVIEW_BOOKKEEPING
+  APPROVE_BOOKKEEPING
+  REVIEW_YEAR_END
+  PERFORM_AUDIT_ACTIONS
+  HANDLE_CORPORATE_LEGAL
+  HANDLE_TAX_LEGAL
+  MANAGE_SUBSCRIPTIONS
+  VIEW_SYSTEM_INCIDENTS
+  MANAGE_PERMISSIONS
+  IMPERSONATE_COMPANY_VIEW
+  ACCESS_ADMIN_TOOLS
+}
+
+enum BackofficePermissionOverrideMode {
+  GRANT
+  DENY
+}
+
+enum BackofficeSlaScopeType {
+  SYSTEM_DEFAULT
+  ROLE
+  CASE_TYPE
+  QUEUE_TYPE
+  COMPANY
+  CASE
+}
+
+enum BackofficeAvailabilityStatus {
+  AVAILABLE
+  LIMITED
+  OFFLINE
+}
+
+enum BackofficeThreadStatus {
+  OPEN
+  WAITING_FOR_CUSTOMER
+  WAITING_FOR_BACKOFFICE
+  RESOLVED
+}
+
+enum BackofficeThreadParticipantType {
+  INTERNAL_USER
+  CUSTOMER_CONTACT
+  SYSTEM
+}
+
+enum BackofficeMessageVisibility {
+  INTERNAL
+  EXTERNAL
+}
+
+enum BackofficeMessageDirection {
+  INBOUND
+  OUTBOUND
+  NOTE
+}
+
+enum BackofficeMessageStatus {
+  UNREAD
+  READ
+  SENT
+}
+
+enum BackofficeRebalanceMode {
+  SUGGEST
+  AUTO
+}
+
+enum BackofficeRebalanceJobMode {
+  DRY_RUN
+  SUGGEST
+  EXECUTE
+}
+
+enum BackofficeRebalanceJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum BackofficeRebalanceExecutionActionStatus {
+  SUGGESTED
+  EXECUTED
+  SKIPPED
+}
+
+enum BackofficeMessageLinkTargetType {
+  COMPANY
+  CASE
+  CUSTOMER
+  PROJECT
+  INVOICE
+  VOUCHER
+  RECEIPT
+  PAYROLL_RUN
+  DOCUMENT
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+enum ReceiptStatus {
+  UPLOADED
+  PENDING_REVIEW
+  BOOKED
+}
+
+enum PayrollStatus {
+  DRAFT
+  READY
+  BOOKED
+}
+
+enum InsightType {
+  INFO
+  WARNING
+  ACTION
+}
+
+model Company {
+  id                 String                 @id @default(cuid())
+  name               String
+  organizationNumber String                 @unique
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  users              User[]
+  employees          EmployeeProfile[]
+  customers          Customer[]
+  projects           Project[]
+  timeEntries        TimeEntry[]
+  diaryEntries       WorkDiaryEntry[]
+  invoices           Invoice[]
+  receipts           Receipt[]
+  vouchers           BookkeepingVoucher[]
+  accounts           Account[]
+  vatCodes           VATCode[]
+  payrollRuns        PayrollRun[]
+  aiInsights         AIInsight[]
+  attachments        Attachment[]
+  backofficeSlaPolicies BackofficeSlaPolicy[]
+  backofficeThreads  BackofficeThread[]
+  backofficeRebalanceJobs BackofficeRebalanceJob[]
+}
+
+model User {
+  id           String            @id @default(cuid())
+  companyId    String
+  email        String            @unique
+  firstName    String
+  lastName     String
+  passwordHash String
+  role         UserRole          @default(EMPLOYEE)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  company      Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employee     EmployeeProfile?
+  timeEntries  TimeEntry[]
+  diaryEntries WorkDiaryEntry[]
+  receipts     Receipt[]
+  insights     AIInsight[]
+  backofficeRoleAssignments BackofficeUserRoleAssignment[]
+  backofficePermissionOverrides BackofficePermissionOverride[]
+  backofficeCapacityProfiles BackofficeCapacityProfile[]
+  backofficeOwnedMessages BackofficeMessage[] @relation("BackofficeMessageSender")
+  backofficeThreadParticipants BackofficeThreadParticipant[]
+  triggeredRebalanceJobs BackofficeRebalanceJob[] @relation("BackofficeRebalanceJobTrigger")
+  rebalanceExecutionsFrom BackofficeRebalanceExecution[] @relation("BackofficeRebalanceExecutionFrom")
+  rebalanceExecutionsTo BackofficeRebalanceExecution[] @relation("BackofficeRebalanceExecutionTo")
+}
+
+model EmployeeProfile {
+  id             String       @id @default(cuid())
+  companyId      String
+  userId         String       @unique
+  employeeNumber String
+  title          String
+  hourlyRate     Decimal      @db.Decimal(10, 2)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  company        Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payrollLines   PayrollLine[]
+}
+
+model Customer {
+  id          String    @id @default(cuid())
+  companyId   String
+  name        String
+  email       String?
+  phone       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  projects    Project[]
+  invoices    Invoice[]
+  attachments Attachment[]
+}
+
+model Project {
+  id          String           @id @default(cuid())
+  companyId   String
+  customerId  String
+  name        String
+  status      ProjectStatus    @default(ACTIVE)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  company     Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer    Customer         @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  timeEntries TimeEntry[]
+  diaryEntries WorkDiaryEntry[]
+  invoices    Invoice[]
+  attachments Attachment[]
+}
+
+model TimeEntry {
+  id         String   @id @default(cuid())
+  companyId  String
+  userId     String
+  projectId  String
+  startedAt  DateTime
+  endedAt    DateTime?
+  minutes    Int
+  note       String?
+  createdAt  DateTime @default(now())
+  company    Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model WorkDiaryEntry {
+  id          String   @id @default(cuid())
+  companyId   String
+  userId      String
+  projectId   String
+  title       String
+  description String
+  workedOn    DateTime
+  createdAt   DateTime @default(now())
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  companyId    String
+  customerId   String
+  projectId    String?
+  invoiceNumber String       @unique
+  issueDate    DateTime
+  dueDate      DateTime
+  status       InvoiceStatus @default(DRAFT)
+  totalNet     Decimal       @db.Decimal(12, 2)
+  totalVat     Decimal       @db.Decimal(12, 2)
+  totalGross   Decimal       @db.Decimal(12, 2)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer     Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  lines        InvoiceLine[]
+  attachments  Attachment[]
+}
+
+model InvoiceLine {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Decimal  @db.Decimal(10, 2)
+  unitPrice   Decimal  @db.Decimal(10, 2)
+  vatRate     Decimal  @db.Decimal(5, 2)
+  totalNet    Decimal  @db.Decimal(12, 2)
+  totalVat    Decimal  @db.Decimal(12, 2)
+  totalGross  Decimal  @db.Decimal(12, 2)
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Receipt {
+  id           String        @id @default(cuid())
+  companyId    String
+  userId       String
+  receiptDate  DateTime
+  vendorName   String
+  amountGross  Decimal       @db.Decimal(12, 2)
+  status       ReceiptStatus @default(PENDING_REVIEW)
+  createdAt    DateTime      @default(now())
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attachments  Attachment[]
+}
+
+model BookkeepingVoucher {
+  id          String              @id @default(cuid())
+  companyId   String
+  voucherDate DateTime
+  series      String
+  number      Int
+  description String
+  createdAt   DateTime            @default(now())
+  company     Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  entries     BookkeepingEntry[]
+}
+
+model BookkeepingEntry {
+  id         String              @id @default(cuid())
+  voucherId  String
+  accountId  String
+  description String?
+  debit      Decimal             @db.Decimal(12, 2) @default(0)
+  credit     Decimal             @db.Decimal(12, 2) @default(0)
+  vatCodeId  String?
+  voucher    BookkeepingVoucher  @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+  account    Account             @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  vatCode    VATCode?            @relation(fields: [vatCodeId], references: [id], onDelete: SetNull)
+}
+
+model Account {
+  id        String              @id @default(cuid())
+  companyId String
+  code      String
+  name      String
+  createdAt DateTime            @default(now())
+  company   Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  entries   BookkeepingEntry[]
+
+  @@unique([companyId, code])
+}
+
+model VATCode {
+  id         String              @id @default(cuid())
+  companyId  String
+  code       String
+  description String
+  rate       Decimal             @db.Decimal(5, 2)
+  createdAt  DateTime            @default(now())
+  company    Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  entries    BookkeepingEntry[]
+
+  @@unique([companyId, code])
+}
+
+model PayrollRun {
+  id          String         @id @default(cuid())
+  companyId   String
+  periodStart DateTime
+  periodEnd   DateTime
+  status      PayrollStatus  @default(DRAFT)
+  createdAt   DateTime       @default(now())
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  lines       PayrollLine[]
+}
+
+model PayrollLine {
+  id               String          @id @default(cuid())
+  payrollRunId     String
+  employeeProfileId String
+  description      String
+  grossAmount      Decimal         @db.Decimal(12, 2)
+  payrollRun       PayrollRun      @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+  employeeProfile  EmployeeProfile @relation(fields: [employeeProfileId], references: [id], onDelete: Cascade)
+}
+
+model AIInsight {
+  id         String      @id @default(cuid())
+  companyId  String
+  userId     String?
+  title      String
+  body       String
+  type       InsightType @default(INFO)
+  createdAt  DateTime    @default(now())
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model Attachment {
+  id          String    @id @default(cuid())
+  companyId   String
+  customerId  String?
+  projectId   String?
+  invoiceId   String?
+  receiptId   String?
+  fileName    String
+  mimeType    String
+  storageKey  String
+  createdAt   DateTime  @default(now())
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  invoice     Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  receipt     Receipt?  @relation(fields: [receiptId], references: [id], onDelete: SetNull)
+}
+
+model WorkspaceLayoutPreference {
+  id            String   @id @default(cuid())
+  userId        String
+  companyId     String
+  roleKey       String
+  widgetOrder   Json
+  hiddenWidgets Json
+  pinnedWidgets Json
+  widgetSizes   Json
+  density       String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, companyId, roleKey])
+  @@index([companyId, roleKey])
+}
+
+model WorkspaceSessionState {
+  id               String   @id @default(cuid())
+  userId           String
+  companyId        String
+  roleKey          String
+  selectedWidgetId String?
+  windows          Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, companyId, roleKey])
+  @@index([companyId, roleKey])
+}
+
+model BackofficeUserRoleAssignment {
+  id         String             @id @default(cuid())
+  userId     String
+  roleKey    BackofficeRoleKey
+  isPrimary  Boolean            @default(false)
+  isActive   Boolean            @default(true)
+  department String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleKey])
+  @@index([userId, isActive])
+}
+
+model BackofficePermissionOverride {
+  id            String                         @id @default(cuid())
+  userId        String
+  permissionKey BackofficePermissionKey
+  mode          BackofficePermissionOverrideMode
+  isActive      Boolean                        @default(true)
+  createdAt     DateTime                       @default(now())
+  updatedAt     DateTime                       @updatedAt
+  user          User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, permissionKey, mode])
+  @@index([userId, isActive])
+}
+
+model BackofficeSlaPolicy {
+  id                         String                 @id @default(cuid())
+  name                       String
+  isActive                   Boolean                @default(true)
+  scopeType                  BackofficeSlaScopeType
+  roleKey                    BackofficeRoleKey?
+  caseType                   String?
+  queueType                  String?
+  companyId                  String?
+  caseExternalId             String?
+  serviceTier                String?
+  firstResponseTargetHours   Int
+  resolutionTargetHours      Int
+  warningThresholdHours      Int
+  pauseOnWaitingForCustomer  Boolean                @default(true)
+  priorityMultipliers        Json?
+  createdAt                  DateTime               @default(now())
+  updatedAt                  DateTime               @updatedAt
+  company                    Company?               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([scopeType, isActive])
+  @@index([roleKey, isActive])
+  @@index([caseType, isActive])
+  @@index([queueType, isActive])
+  @@index([companyId, isActive])
+}
+
+model BackofficeCapacityProfile {
+  id                  String                     @id @default(cuid())
+  userId              String?
+  roleKey             BackofficeRoleKey?
+  teamKey             String?
+  isActive            Boolean                    @default(true)
+  availabilityStatus  BackofficeAvailabilityStatus @default(AVAILABLE)
+  dailyCapacityPoints Int
+  weeklyCapacityPoints Int
+  maxParallelCases    Int
+  preferredQueueTypes Json?
+  specialistCaseTypes Json?
+  workTypeWeights     Json?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  user                User?                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([roleKey, isActive])
+  @@index([teamKey, isActive])
+}
+
+model BackofficeThread {
+  id            String                      @id @default(cuid())
+  companyId     String
+  caseId        String?
+  title         String
+  status        BackofficeThreadStatus      @default(OPEN)
+  priority      String
+  sourceType    String?
+  sourceId      String?
+  lastMessageAt DateTime                    @default(now())
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+  company       Company                     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  participants  BackofficeThreadParticipant[]
+  messages      BackofficeMessage[]
+  objectLinks   BackofficeThreadObjectLink[]
+
+  @@index([companyId, status])
+  @@index([caseId])
+}
+
+model BackofficeThreadParticipant {
+  id              String                           @id @default(cuid())
+  threadId        String
+  userId          String?
+  roleKey         BackofficeRoleKey?
+  participantType BackofficeThreadParticipantType
+  displayName     String
+  email           String?
+  lastReadAt      DateTime?
+  isActive        Boolean                          @default(true)
+  createdAt       DateTime                         @default(now())
+  updatedAt       DateTime                         @updatedAt
+  thread          BackofficeThread                 @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user            User?                            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, isActive])
+  @@index([userId, isActive])
+}
+
+model BackofficeMessage {
+  id            String                     @id @default(cuid())
+  threadId      String
+  senderUserId  String?
+  senderRoleKey BackofficeRoleKey?
+  visibility    BackofficeMessageVisibility
+  direction     BackofficeMessageDirection
+  status        BackofficeMessageStatus    @default(UNREAD)
+  body          String
+  metadata      Json?
+  createdAt     DateTime                   @default(now())
+  thread        BackofficeThread           @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderUser    User?                      @relation("BackofficeMessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
+
+  @@index([threadId, createdAt])
+  @@index([senderUserId])
+}
+
+model BackofficeRebalancePolicy {
+  id                       String                @id @default(cuid())
+  name                     String
+  isActive                 Boolean               @default(true)
+  mode                     BackofficeRebalanceMode @default(SUGGEST)
+  roleKey                  BackofficeRoleKey?
+  overloadThreshold        Decimal               @db.Decimal(10, 2)
+  underloadThreshold       Decimal               @db.Decimal(10, 2)
+  maxMovesPerRun           Int                   @default(3)
+  excludeWaitingForCustomer Boolean              @default(true)
+  rebalanceCooldownHours   Int                   @default(8)
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+
+  @@index([roleKey, isActive])
+}
+
+model BackofficeRebalanceJob {
+  id                 String                       @id @default(cuid())
+  companyId          String?
+  roleKey            BackofficeRoleKey?
+  mode               BackofficeRebalanceJobMode
+  status             BackofficeRebalanceJobStatus @default(PENDING)
+  triggerSource      String
+  triggeredByUserId  String?
+  dryRun             Boolean                      @default(false)
+  analyzedCaseCount  Int                          @default(0)
+  suggestionCount    Int                          @default(0)
+  executedMoveCount  Int                          @default(0)
+  skippedMoveCount   Int                          @default(0)
+  warningCount       Int                          @default(0)
+  errorMessage       String?
+  metadata           Json?
+  startedAt          DateTime                     @default(now())
+  finishedAt         DateTime?
+  createdAt          DateTime                     @default(now())
+  updatedAt          DateTime                     @updatedAt
+  company            Company?                     @relation(fields: [companyId], references: [id], onDelete: SetNull)
+  triggeredByUser    User?                        @relation("BackofficeRebalanceJobTrigger", fields: [triggeredByUserId], references: [id], onDelete: SetNull)
+  executions         BackofficeRebalanceExecution[]
+
+  @@index([status, startedAt])
+  @@index([roleKey, startedAt])
+  @@index([companyId, startedAt])
+}
+
+model BackofficeRebalanceExecution {
+  id                String                                 @id @default(cuid())
+  jobId             String
+  caseExternalId    String
+  fromUserId        String?
+  toUserId          String?
+  roleKey           BackofficeRoleKey?
+  status            BackofficeRebalanceExecutionActionStatus
+  reason            String
+  blocker           String?
+  caseTitle         String?
+  metadata          Json?
+  createdAt         DateTime                               @default(now())
+  job               BackofficeRebalanceJob                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  fromUser          User?                                  @relation("BackofficeRebalanceExecutionFrom", fields: [fromUserId], references: [id], onDelete: SetNull)
+  toUser            User?                                  @relation("BackofficeRebalanceExecutionTo", fields: [toUserId], references: [id], onDelete: SetNull)
+
+  @@index([jobId, createdAt])
+  @@index([caseExternalId])
+}
+
+model BackofficeThreadObjectLink {
+  id          String                           @id @default(cuid())
+  threadId     String
+  targetType   BackofficeMessageLinkTargetType
+  targetId     String
+  label        String?
+  href         String?
+  isPrimary    Boolean                         @default(false)
+  createdAt    DateTime                        @default(now())
+  updatedAt    DateTime                        @updatedAt
+  thread       BackofficeThread                @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@index([threadId, isPrimary])
+  @@index([targetType, targetId])
+}

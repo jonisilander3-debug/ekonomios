@@ -1,0 +1,15 @@
+{
+  "name": "@ekonomi/config",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    "./tsconfig/base.json": "./tsconfig/base.json",
+    "./tsconfig/next.json": "./tsconfig/next.json",
+    "./tsconfig/nest.json": "./tsconfig/nest.json",
+    "./tsconfig/expo.json": "./tsconfig/expo.json",
+    "./eslint/base.cjs": "./eslint/base.cjs",
+    "./eslint/next.cjs": "./eslint/next.cjs",
+    "./eslint/nest.cjs": "./eslint/nest.cjs",
+    "./prettier/base.cjs": "./prettier/base.cjs"
+  }
+}
