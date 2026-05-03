@@ -3,181 +3,131 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
+// Shared styles
+const pageBg =
+  "min-h-screen bg-[radial-gradient(circle_at_top_right,#d8fbff_0,transparent_35%),radial-gradient(circle_at_top_left,#e8f6ff_0,transparent_35%),linear-gradient(180deg,#ffffff,#f4fbff)] text-slate-900";
+const glassCard =
+  "rounded-3xl bg-white/80 backdrop-blur-xl ring-1 ring-cyan-100 shadow-xl shadow-cyan-900/5";
+const primaryBtn =
+  "rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-3 font-semibold text-white shadow-lg shadow-cyan-500/20 hover:scale-[1.02] transition";
+const secondaryBtn =
+  "rounded-2xl bg-white px-6 py-3 font-semibold text-slate-700 shadow ring-1 ring-slate-200 hover:bg-slate-50";
+
 const features = [
   { icon: "✨", title: "AI som jobbar åt dig", text: "Systemet visar exakt vad du ska göra – innan du ens tänker på det." },
-  { icon: "📄", title: "Fakturera snabbare", text: "Skapa och skicka fakturor på sekunder, inte timmar." },
-  { icon: "🧾", title: "Kvitton utan kaos", text: "Alla kvitton samlas automatiskt och kopplas rätt." },
-  { icon: "📚", title: "Bokföring utan stress", text: "Full kontroll utan att behöva vara expert." },
-  { icon: "🏛️", title: "Skatt & moms klart", text: "Se exakt vad du ska betala – innan det är för sent." },
-  { icon: "⏱️", title: "Tid & projekt", text: "Se vem som jobbar, vad som faktureras och vad som saknas." },
+  { icon: "📄", title: "Fakturera snabbare", text: "Skapa och skicka fakturor på sekunder." },
+  { icon: "🧾", title: "Kvitton utan kaos", text: "Alla kvitton samlas automatiskt." },
+  { icon: "📚", title: "Bokföring utan stress", text: "Full kontroll utan att vara expert." },
+  { icon: "🏛️", title: "Skatt & moms", text: "Se vad du ska betala i förväg." },
+  { icon: "⏱️", title: "Tid & projekt", text: "Följ arbete och fakturering enkelt." },
 ];
 
 const testimonials = [
-  { text: "Vi sparar minst 10 timmar i veckan. Helt sjukt.", name: "Byggfirma Stockholm" },
-  { text: "Första gången jag faktiskt har koll på ekonomin.", name: "Målerifirma Göteborg" },
+  { text: "Vi sparar minst 10 timmar i veckan.", name: "Byggfirma Stockholm" },
+  { text: "Första gången jag har full kontroll.", name: "Målerifirma Göteborg" },
 ];
 
-const faqItems = [
-  { question: "Vad är Ekonomi OS?", answer: "Ett modernt ekonomisystem där AI hjälper dig att driva företaget – inte bara bokföra det." },
-  { question: "Passar det serviceföretag?", answer: "Ja, det är byggt för företag med kunder, projekt, personal och löpande arbete." },
-  { question: "Ingår AI-assistenten?", answer: "Ja. Den guidar dig varje dag och visar vad som behöver göras." },
-  { question: "Vad kostar det?", answer: "1 399 kr per månad inklusive moms. Inget krångel." },
-  { question: "Kan vi få hjälp att komma igång?", answer: "Ja, onboarding och support ingår så att du snabbt kommer igång." },
-];
+function Header({ onLogin }: { onLogin: () => void }) {
+  return (
+    <header className="sticky top-0 z-40 border-b border-white/60 bg-white/70 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="font-bold tracking-wide">Ekonomi OS</div>
+        <div className="flex items-center gap-3">
+          <button onClick={onLogin} className="rounded-full px-4 py-2 text-sm text-slate-600 hover:text-cyan-700">
+            Logga in
+          </button>
+          <button className="rounded-full bg-cyan-500 px-4 py-2 text-sm font-semibold text-white">Kom igång</button>
+        </div>
+      </div>
+    </header>
+  );
+}
 
 function MiniOsPreview() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="relative mx-auto w-full max-w-xl rounded-[40px] bg-gradient-to-br from-slate-900 to-cyan-900 p-[2px] shadow-[0_40px_120px_rgba(0,200,255,0.25)]"
-    >
-      <div className="rounded-[38px] bg-slate-950 p-5 text-white">
-        <div className="mb-4 text-xs text-cyan-300">✨ AI Ekonomikoll</div>
-        <div className="text-lg font-semibold">Du har 4 saker att göra idag</div>
-        <div className="mt-2 text-sm text-slate-300">2 kvitton, 1 faktura, 1 momsrapport</div>
-
-        <div className="mt-4 grid grid-cols-4 gap-3">
-          {[["🏦","184k"],["📄","32k"],["🏛️","58k"],["👷","6"]].map(([icon,value]) => (
-            <div key={value} className="rounded-2xl bg-white/10 p-3 text-center">
-              <div>{icon}</div>
-              <div className="text-xs font-bold">{value}</div>
-            </div>
-          ))}
-        </div>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`${glassCard} p-5`}>
+      <div className="rounded-2xl bg-slate-950 p-4 text-white">
+        <div className="text-xs text-cyan-300">✨ AI Ekonomikoll</div>
+        <div className="text-lg font-semibold">4 saker att göra</div>
+        <div className="mt-2 text-sm text-slate-300">Kvitton, faktura, moms</div>
+      </div>
+      <div className="mt-4 grid grid-cols-4 gap-3">
+        {["🏦", "📄", "🏛️", "👷"].map((i, idx) => (
+          <div key={idx} className="rounded-xl bg-slate-50 p-3 text-center">
+            {i}
+          </div>
+        ))}
       </div>
     </motion.div>
   );
 }
 
-function FAQItem({
-  item,
-  open,
-  onClick,
-}: {
-  item: { question: string; answer: string };
-  open: boolean;
-  onClick: () => void;
-}) {
+function LoginPage({ onBack }: { onBack: () => void }) {
   return (
-    <button onClick={onClick} className="w-full rounded-2xl bg-white p-5 text-left shadow-sm">
-      <div className="flex justify-between">
-        <div className="font-semibold">{item.question}</div>
-        <div>{open ? "−" : "+"}</div>
-      </div>
-      {open && <p className="mt-2 text-sm text-gray-600">{item.answer}</p>}
-    </button>
+    <div className={pageBg}>
+      <Header onLogin={onBack} />
+      <main className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 lg:grid-cols-[1fr_420px]">
+        <div>
+          <h1 className="text-5xl font-bold">Logga in</h1>
+          <p className="mt-4 text-slate-600">Fortsätt där du slutade.</p>
+        </div>
+        <div className={`${glassCard} mx-auto w-full max-w-md p-6`}>
+          <input placeholder="E-post" className="mb-3 w-full rounded-xl border px-4 py-3 text-sm" />
+          <input placeholder="Lösenord" type="password" className="mb-4 w-full rounded-xl border px-4 py-3 text-sm" />
+          <button className={`${primaryBtn} w-full py-3 text-sm`}>Logga in</button>
+          <button className="mt-3 w-full rounded-xl bg-slate-900 py-3 text-sm text-white">BankID</button>
+        </div>
+      </main>
+    </div>
   );
 }
 
 export default function EkonomiOsLandingPrototype() {
-  const [openFaq, setOpenFaq] = useState(0);
+  const [showLogin, setShowLogin] = useState(false);
+
+  if (showLogin) return <LoginPage onBack={() => setShowLogin(false)} />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-cyan-50 text-slate-900">
-      {/* Sticky CTA */}
-      <div className="fixed bottom-4 left-1/2 z-50 w-[92%] max-w-xl -translate-x-1/2 rounded-2xl bg-slate-900 p-3 shadow-2xl">
-        <div className="flex items-center justify-between gap-3">
-          <div className="text-xs text-slate-300">Starta idag – få onboarding direkt</div>
-          <button className="rounded-xl bg-cyan-500 px-4 py-2 text-sm font-semibold text-white">Kom igång</button>
-        </div>
-      </div>
-
-      <header className="flex justify-between px-6 py-4">
-        <div className="font-bold">Ekonomi OS</div>
-        <button className="rounded-full bg-cyan-500 px-4 py-2 text-white">Kom igång</button>
-      </header>
+    <div className={pageBg}>
+      <Header onLogin={() => setShowLogin(true)} />
 
       <main className="mx-auto max-w-7xl px-6">
         <section className="grid gap-12 py-20 lg:grid-cols-2">
           <div>
-            <div className="mb-4 text-sm font-medium text-cyan-700">Används av 120+ företag</div>
-
-            <h1 className="text-6xl font-bold leading-tight">
-              Sluta jobba med bokföring
-              <br />
-              Låt systemet göra det åt dig
-            </h1>
-
-            <p className="mt-6 text-lg text-gray-600">
-              Ekonomi OS är byggt för företag som vill ha kontroll utan att lägga tid på administration.
-            </p>
-
-            <div className="mt-8 flex gap-3">
-              <button className="rounded-2xl bg-cyan-500 px-8 py-4 text-lg text-white shadow-xl">
-                Kom igång
-              </button>
-
-              <button className="rounded-2xl bg-white px-6 py-4 text-lg text-slate-700 shadow">
-                Se demo
-              </button>
-            </div>
-
-            <div className="mt-4 text-sm text-cyan-700">
-              Starta idag – få onboarding direkt
+            <div className="text-sm text-cyan-700">Används av 120+ företag</div>
+            <h1 className="text-6xl font-bold leading-tight">Sluta jobba med bokföring</h1>
+            <p className="mt-6 text-lg text-slate-600">Låt systemet göra jobbet åt dig.</p>
+            <div className="mt-6 flex gap-3">
+              <button className={primaryBtn}>Kom igång</button>
+              <button className={secondaryBtn}>Se demo</button>
             </div>
           </div>
-
           <MiniOsPreview />
         </section>
 
-        {/* Testimonials */}
         <section className="grid gap-4 py-10 md:grid-cols-2">
           {testimonials.map((t) => (
-            <div key={t.text} className="rounded-2xl bg-white p-6 shadow">
-              <div className="text-sm text-gray-600">“{t.text}”</div>
-              <div className="mt-3 text-xs text-gray-400">— {t.name}</div>
+            <div key={t.text} className={`${glassCard} p-5`}>
+              “{t.text}”
+              <div className="mt-2 text-xs text-slate-400">— {t.name}</div>
             </div>
           ))}
         </section>
 
-        {/* Before/After */}
-        <section className="grid gap-6 py-10 md:grid-cols-2">
-          <div className="rounded-2xl bg-red-50 p-6">
-            <div className="font-semibold text-red-700">Före</div>
-            <ul className="mt-3 space-y-1 text-sm text-red-600">
-              <li>Excel och kaos</li>
-              <li>Missade kvitton</li>
-              <li>Ingen kontroll</li>
-            </ul>
-          </div>
-          <div className="rounded-2xl bg-green-50 p-6">
-            <div className="font-semibold text-green-700">Efter</div>
-            <ul className="mt-3 space-y-1 text-sm text-green-600">
-              <li>AI visar vad du ska göra</li>
-              <li>Allt samlat</li>
-              <li>Full kontroll</li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="grid gap-4 py-10 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-4 py-10 lg:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="rounded-2xl bg-white p-6 shadow">
-              <div className="text-xl">{f.icon}</div>
+            <div key={f.title} className={`${glassCard} p-5`}>
+              <div>{f.icon}</div>
               <div className="mt-2 font-semibold">{f.title}</div>
-              <div className="text-sm text-gray-500">{f.text}</div>
+              <div className="text-sm text-slate-500">{f.text}</div>
             </div>
           ))}
         </section>
 
-        {/* Pricing */}
-        <section className="py-20 text-center">
-          <div className="text-5xl font-bold">1 399 kr / månad</div>
-          <div className="text-gray-500">inkl. moms</div>
-          <div className="mt-3 text-sm text-gray-500">30 dagars garanti – testa utan risk</div>
-          <button className="mt-6 rounded-2xl bg-cyan-500 px-8 py-4 text-white">
-            Starta direkt
-          </button>
-        </section>
-
-        <section className="py-16">
-          <h2 className="mb-6 text-center text-3xl font-bold">Vanliga frågor</h2>
-          <div className="space-y-3">
-            {faqItems.map((item, index) => (
-              <FAQItem key={item.question} item={item} open={openFaq === index} onClick={() => setOpenFaq(openFaq === index ? -1 : index)} />
-            ))}
-          </div>
+        <section className="py-16 text-center">
+          <div className="text-4xl font-bold">1 399 kr / månad</div>
+          <div className="text-sm text-slate-500">inkl. moms</div>
+          <button className={`mt-6 ${primaryBtn}`}>Starta direkt</button>
         </section>
       </main>
     </div>
