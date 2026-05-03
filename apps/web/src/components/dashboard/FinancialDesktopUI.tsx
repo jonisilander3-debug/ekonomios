@@ -6,14 +6,14 @@ import { createMockPlatformData } from "@/features/platform-data/mock-data";
 import { usePlatformState } from "@/features/platform-data/use-platform-state";
 
 const initialApps = [
-  { id: 1, label: "Kunder", icon: "KU", badge: "12" },
-  { id: 2, label: "Projekt", icon: "PR", badge: "8" },
-  { id: 3, label: "Fakturor", icon: "FA", badge: "5" },
-  { id: 4, label: "Kvitton", icon: "KV", badge: "3" },
-  { id: 5, label: "Bokforing", icon: "BO" },
-  { id: 6, label: "Loner", icon: "LO", badge: "2" },
-  { id: 7, label: "Moms", icon: "MO", badge: "1" },
-  { id: 8, label: "Rapporter", icon: "RA" },
+  { id: 1, label: "Kunder", icon: "👥", badge: "12" },
+  { id: 2, label: "Projekt", icon: "💼", badge: "8" },
+  { id: 3, label: "Fakturor", icon: "📄", badge: "5" },
+  { id: 4, label: "Kvitton", icon: "🧾", badge: "3" },
+  { id: 5, label: "Bokforing", icon: "📚" },
+  { id: 6, label: "Loner", icon: "💳", badge: "2" },
+  { id: 7, label: "Moms", icon: "%" , badge: "1" },
+  { id: 8, label: "Rapporter", icon: "📊" },
 ];
 
 type DesktopApp = (typeof initialApps)[number];
@@ -49,7 +49,7 @@ function DesktopAppIcon({
           </div>
         )}
 
-        <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-slate-200/80 bg-white text-sm font-semibold tracking-[0.18em] text-slate-600 shadow-[0_16px_32px_rgba(15,23,42,0.06)]">
+        <div className="flex h-16 w-16 items-center justify-center rounded-[22px] border border-slate-200/80 bg-white text-2xl text-slate-600 shadow-[0_16px_32px_rgba(15,23,42,0.06)]">
           {app.icon}
         </div>
 
@@ -79,46 +79,29 @@ function AiWidget() {
     <motion.div
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-[28px] border border-slate-800/80 bg-[#0b1220] p-5 text-white shadow-[0_26px_70px_rgba(15,23,42,0.2)] sm:rounded-[30px] sm:p-6 xl:rounded-[32px] xl:p-7"
+      className="rounded-[30px] border border-slate-900/90 bg-black p-6 text-white shadow-[0_26px_70px_rgba(15,23,42,0.18)] sm:p-7"
     >
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_280px] xl:gap-6">
+      <div className="flex items-start justify-between gap-6">
         <div>
-          <div className="mb-3 text-xs font-medium uppercase tracking-[0.28em] text-emerald-300">
-            AI Ekonomikoll
-          </div>
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-[2rem]">God morgon, Joni</h2>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300 sm:text-base">Har ar det viktigaste i arbetsytan just nu.</p>
-
-          <div className="mt-5 space-y-3 text-sm text-slate-100">
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">3 kvitton behover kontrolleras</div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">2 fakturor ar redo att skickas</div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">Momsrapport ar nastan klar</div>
-          </div>
-
-          <button className="mt-5 w-full rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-950 shadow-sm sm:mt-6 sm:w-auto">
-            Oppna AI
-          </button>
+          <div className="mb-2 text-xs text-green-300">✨ AI Ekonomikoll</div>
+          <h2 className="text-2xl font-semibold sm:text-3xl">God morgon, Joni</h2>
+          <p className="mt-2 text-base text-slate-300">Här är det viktigaste idag</p>
         </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-[26px] border border-white/10 bg-white/5 p-4">
-            <div className="text-xs text-slate-400">Banksaldo</div>
-            <div className="mt-3 text-2xl font-semibold">184 250 kr</div>
-          </div>
-          <div className="rounded-[26px] border border-white/10 bg-white/5 p-4">
-            <div className="text-xs text-slate-400">Forfallna</div>
-            <div className="mt-3 text-2xl font-semibold">32 900 kr</div>
-          </div>
-          <div className="rounded-[26px] border border-white/10 bg-white/5 p-4">
-            <div className="text-xs text-slate-400">Skatt</div>
-            <div className="mt-3 text-2xl font-semibold">58 420 kr</div>
-          </div>
-          <div className="rounded-[26px] border border-white/10 bg-white/5 p-4">
-            <div className="text-xs text-slate-400">Personal</div>
-            <div className="mt-3 text-2xl font-semibold">6</div>
-          </div>
+        <div className="text-right">
+          <div className="text-2xl font-bold">7</div>
+          <div className="text-sm text-slate-200">insikter</div>
         </div>
       </div>
+
+      <div className="mt-6 space-y-4 text-[15px] text-slate-50">
+        <div>⚠️ 3 kvitton behöver kontrolleras</div>
+        <div>✅ 2 fakturor redo att skickas</div>
+        <div>⏱️ Momsrapport nästan klar</div>
+      </div>
+
+      <button className="mt-6 w-full rounded-2xl bg-white py-3 text-base font-semibold text-black">
+        Öppna AI
+      </button>
     </motion.div>
   );
 }
@@ -126,26 +109,27 @@ function AiWidget() {
 function FinanceStatusWidget() {
   const items = [
     // TODO: fetch from API
-    { label: "Banksaldo", value: "184 250 kr" },
+    { label: "Banksaldo", value: "184 250 kr", icon: "🏦" },
     // TODO: fetch from API
-    { label: "Forfallna", value: "32 900 kr" },
+    { label: "Förfallna", value: "32 900 kr", icon: "📄" },
     // TODO: calculate from VAT + payroll
-    { label: "Skatt", value: "58 420 kr" },
+    { label: "Skatt", value: "58 420 kr", icon: "🏛️" },
     // TODO: fetch active users
-    { label: "Personal", value: "6" },
+    { label: "Personal", value: "6", icon: "👷" },
   ];
 
   return (
-    <div className="rounded-[26px] border border-slate-200/80 bg-white/90 p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] backdrop-blur sm:rounded-[30px] sm:p-4">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {items.map((item) => (
-          <div key={item.label} className="rounded-[24px] border border-slate-200/80 bg-slate-50/80 px-5 py-4">
-            <div className="text-xs uppercase tracking-[0.18em] text-slate-500">{item.label}</div>
-            <div className="mt-2 text-xl font-semibold text-slate-900">{item.value}</div>
+          <div key={item.label} className="flex flex-col items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-lg">
+              {item.icon}
+            </div>
+            <div className="text-[12px] text-slate-500">{item.label}</div>
+            <div className="text-xl font-semibold text-slate-950">{item.value}</div>
           </div>
         ))}
       </div>
-    </div>
   );
 }
 
@@ -203,7 +187,7 @@ function Spotlight({
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Sok eller fraga AI..."
+          placeholder="Sök eller fråga AI..."
           className="w-full border-b border-slate-200 pb-3 text-base outline-none"
         />
       </div>
@@ -243,7 +227,7 @@ export default function FinancialDesktopUI() {
   const activeCompanyName =
     companies.find((company) => company.id === currentCompanyId)?.name ??
     companies[0]?.name ??
-    "Aktivt foretag";
+    "Aktivt företag";
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -282,7 +266,7 @@ export default function FinancialDesktopUI() {
   const openApp = (app: DesktopApp) => {
     // TODO: connect routing
     // example: router.push("/invoices")
-    console.log(`Oppnar ${app.label}`);
+    console.log(`Öppnar ${app.label}`);
   };
 
   const moveApp = (appId: number, direction: number) => {
@@ -330,7 +314,7 @@ export default function FinancialDesktopUI() {
           </div>
         )}
 
-        <div className="rounded-[28px] border border-slate-200/80 bg-white/75 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.05)] backdrop-blur sm:rounded-[30px] sm:p-6">
+        <div className="rounded-[28px] border border-slate-200/80 bg-transparent p-1 sm:p-2">
           <div className={`grid gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 ${appGridClass}`}>
             {apps.map((app) => (
               <DesktopAppIcon
