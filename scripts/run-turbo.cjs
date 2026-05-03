@@ -2,12 +2,20 @@ const { spawnSync } = require('node:child_process');
 const path = require('node:path');
 
 const repoRoot = path.resolve(__dirname, '..');
-const turboBin = path.join(repoRoot, 'node_modules', '.bin', 'turbo.cmd');
-const pnpmShim = path.join(repoRoot, 'pnpm.cmd');
+const turboBin = path.join(
+  repoRoot,
+  'node_modules',
+  '.bin',
+  process.platform === 'win32' ? 'turbo.cmd' : 'turbo'
+);
+const pnpmShim =
+  process.platform === 'win32'
+    ? path.join(repoRoot, 'pnpm.cmd')
+    : path.join(repoRoot, 'pnpm');
 
 const env = {
   ...process.env,
-  PATH: `${repoRoot};${process.env.PATH ?? ''}`,
+  PATH: `${repoRoot}${path.delimiter}${process.env.PATH ?? ''}`,
   npm_execpath: pnpmShim
 };
 
